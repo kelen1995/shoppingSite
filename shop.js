@@ -22,6 +22,7 @@ function getProductList() {
         // console.log(res.data);
         renderProductList(res.data.products);
         createProductSelect(res.data.products);
+        bindAddCartEvent(res.data.products);
     })
     .catch(err => {
         console.log(err.response);
@@ -43,21 +44,20 @@ function renderProductList(productData) {
         `;
     });
     productList.innerHTML = str;
-    bindAddCartEvent(productData);
 }
 
 function getFormatPrice(price) {
     return `NT$${price.toLocaleString('en-US')}`;
 }
 
-//TODO
 function bindAddCartEvent(productData) {
     productList.addEventListener('click', e => {
         let tar = e.target;
         tar.classList.forEach(item => {
             if (item === 'addCardBtn') {
-                console.log(tar.dataset.id);
+                // console.log(tar.dataset.id);
                 // 加入購物車
+                addProductToCart(tar.dataset.id);
             }
         });
     })
@@ -69,8 +69,9 @@ function getCartList() {
         url: `${apiUrl}/api/livejs/v1/customer/${apiPath}/carts`
     })
     .then(res => {
-        // console.log(res.data);
-        renderCartList(res.data)
+        console.log(res.data);
+        renderCartList(res.data);
+        currentCarts = res.data.carts;
     })
     .catch(err => {
         console.log(err.response);
@@ -152,14 +153,69 @@ function bindSelectProductEvent(productData) {
     });
 }
 
-//TODO
-function createCart(productId) {
-    // 送出購物車請求
+function addProductToCart(productId) {
+    // 取得最新購物車數量
     axios({
-        method: post,
+        method: 'get',
         url: `${apiUrl}/api/livejs/v1/customer/${apiPath}/carts`
     })
+    .then(res => {
+        let productCart = res.data.carts.filter(item => item.product.id === productId ? true : false);
 
-    // 重新 render 購物車區塊
-
+        // 新增商品購物車 / 購物車商品數量 +1
+        if (productCart.length === 0) {
+            createCart(productId);
+        } else if (productCart.length > 0) {
+            let newQuantity = productCart[0].quantity + 1;
+            modifyCart(productCart[0].id, newQuantity);
+        }
+    })
+    .catch(err => {
+        console.log();
+    });
 }
+
+function createCart(productId) {
+    axios({
+        method: 'post',
+        url: `${apiUrl}/api/livejs/v1/customer/${apiPath}/carts`,
+        data: {
+            "data": {
+              "productId": productId,
+              "quantity": 1
+            }
+        }
+    })
+    .then(res => {
+        console.log(res.data);
+        alert('商品已成功加入購物車');
+        renderCartList(res.data);
+    })
+    .catch(err => {
+        alert('商品無法加入購物車');
+        console.log(err.response);
+    });
+}
+
+function modifyCart(cartId, num) {
+    axios({
+        method: 'patch',
+        url: `${apiUrl}/api/livejs/v1/customer/${apiPath}/carts`,
+        data: {
+            "data": {
+              "id": cartId,
+              "quantity": num
+            }
+        }
+    })
+    .then(res => {
+        console.log(res.data);
+        alert('成功修改商品數量');
+        renderCartList(res.data);
+    })
+    .catch(err => {
+        alert('無法修改商品數量');
+        console.log(err.response);
+    });
+}
+
