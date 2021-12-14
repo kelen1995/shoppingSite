@@ -342,6 +342,7 @@ function createOrders() {
         console.log(res.data);
         alert('訂單已成功送出');
         renderCartList({});// clear cart list
+        clearOrderMsg();
       })
       .catch(err => {
         console.log(err.response);
@@ -372,4 +373,15 @@ function clearAlertMessage() {
   messages.forEach(msg => {
     msg.textContent = '';
   })
+}
+
+function clearOrderMsg() {
+    let inputs = document.querySelectorAll('.orderInfo-input');
+    inputs.forEach(item => {
+        if (item.getAttribute('id') === 'tradeWay') {
+            item.value = 'ATM';
+        } else {
+            item.value = '';
+        }
+    });
 }
