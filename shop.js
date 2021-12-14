@@ -10,6 +10,7 @@ function init() {
     getProductList();
     getCartList();
     bindAddCartEvent();
+    bindRemoveCartEvent();
 }
 
 init();
@@ -219,5 +220,52 @@ function modifyCart(cartId, num) {
     });
 }
 
+function bindRemoveCartEvent() {
+    cartTable.addEventListener('click', e => {
+        // remove single cart
+        if (e.path[1].classList.value.includes('discardBtn')) {
+            // console.log(e.path[1].dataset.id);
+            let cartId = e.path[1].dataset.id;
+            let isDelete = confirm('是否要刪除此筆購物車？');
 
+            if (isDelete) {
+                axios({
+                    method: 'delete',
+                    url: `${apiUrl}/api/livejs/v1/customer/${apiPath}/carts/${cartId}`
+                })
+                .then(res => {
+                    // console.log(res.data);
+                    alert('已成功刪除購物車');
+                    renderCartList(res.data);
+                })
+                .catch(err => {
+                    alert('刪除購物車失敗');
+                    console.log(err.response);
+                });
+            }
+        }
+
+        // remove all carts
+        if (e.target.classList.value.includes('discardAllBtn')) {
+            let isDelete = confirm('是否要刪除所有購物車？');
+            if (isDelete) {
+                axios({
+                    method: 'delete',
+                    url: `${apiUrl}/api/livejs/v1/customer/${apiPath}/carts`
+                })
+                .then(res => {
+                    // console.log(res.data);
+                    alert('已成功刪除所有購物車');
+                    renderCartList(res.data);
+                })
+                .catch(err => {
+                    alert('刪除所有購物車失敗');
+                    console.log(err.response);
+                });
+            }
+        }
+    });
+
+
+}
 
