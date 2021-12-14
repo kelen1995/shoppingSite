@@ -9,6 +9,7 @@ const cartTable = document.querySelector('.shoppingCart-table');
 function init() {
     getProductList();
     getCartList();
+    bindAddCartEvent();
 }
 
 init();
@@ -22,7 +23,6 @@ function getProductList() {
         // console.log(res.data);
         renderProductList(res.data.products);
         createProductSelect(res.data.products);
-        bindAddCartEvent(res.data.products);
     })
     .catch(err => {
         console.log(err.response);
@@ -48,19 +48,6 @@ function renderProductList(productData) {
 
 function getFormatPrice(price) {
     return `NT$${price.toLocaleString('en-US')}`;
-}
-
-function bindAddCartEvent(productData) {
-    productList.addEventListener('click', e => {
-        let tar = e.target;
-        tar.classList.forEach(item => {
-            if (item === 'addCardBtn') {
-                // console.log(tar.dataset.id);
-                // 加入購物車
-                addProductToCart(tar.dataset.id);
-            }
-        });
-    })
 }
 
 function getCartList() {
@@ -153,6 +140,19 @@ function bindSelectProductEvent(productData) {
     });
 }
 
+function bindAddCartEvent() {
+    productList.addEventListener('click', e => {
+        let tar = e.target;
+        tar.classList.forEach(item => {
+            if (item === 'addCardBtn') {
+                // console.log(tar.dataset.id);
+                // 加入購物車
+                addProductToCart(tar.dataset.id);
+            }
+        });
+    })
+}
+
 function addProductToCart(productId) {
     // 取得最新購物車數量
     axios({
@@ -218,4 +218,6 @@ function modifyCart(cartId, num) {
         console.log(err.response);
     });
 }
+
+
 
