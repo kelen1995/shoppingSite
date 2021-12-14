@@ -71,7 +71,6 @@ function getCartList() {
 
 function renderCartList(cartData) {
     console.log(cartData);
-    let carts = cartData.carts;
     // 建立購物車 HTML
     let str = `
         <tr>
@@ -81,39 +80,41 @@ function renderCartList(cartData) {
             <th width="15%">金額</th>
             <th width="15%"></th>
         </tr>`;
-
-    carts.forEach(item => {
-        str += `<tr>
+    
+    if (cartData.carts && cartData.carts.length > 0){
+        let carts = cartData.carts;
+        carts.forEach(item => {
+            str += `<tr>
+                        <td>
+                            <div class="cardItem-title">
+                                <img src="${item.product.images}" alt="${item.title}">
+                                <p>${item.product.title}</p>
+                            </div>
+                        </td>
+                        <td>${getFormatPrice(item.product.price)}</td>
+                        <td>${item.quantity}</td>
+                        <td>${getFormatPrice(item.product.price * item.quantity)}</td>
+                        <td class="discardBtn" data-id=${item.id}>
+                            <a href="#" class="material-icons">
+                                clear
+                            </a>
+                        </td>
+                    </tr>`;
+        });
+    
+        str += `
+                <tr>
                     <td>
-                        <div class="cardItem-title">
-                            <img src="${item.product.images}" alt="${item.title}">
-                            <p>${item.product.title}</p>
-                        </div>
+                        <a href="#" class="discardAllBtn">刪除所有品項</a>
                     </td>
-                    <td>${getFormatPrice(item.product.price)}</td>
-                    <td>${item.quantity}</td>
-                    <td>${getFormatPrice(item.product.price * item.quantity)}</td>
-                    <td class="discardBtn" data-id=${item.id}>
-                        <a href="#" class="material-icons">
-                            clear
-                        </a>
+                    <td></td>
+                    <td></td>
+                    <td>
+                        <p>總金額</p>
                     </td>
+                    <td>${getFormatPrice(cartData.finalTotal)}</td>
                 </tr>`;
-    });
-
-    str += `
-            <tr>
-                <td>
-                    <a href="#" class="discardAllBtn">刪除所有品項</a>
-                </td>
-                <td></td>
-                <td></td>
-                <td>
-                    <p>總金額</p>
-                </td>
-                <td>${getFormatPrice(cartData.finalTotal)}</td>
-            </tr>`;
-
+    }
     cartTable.innerHTML = str;
 }
 
@@ -338,7 +339,9 @@ function createOrders() {
           data: JSON.parse(buyerData)
       })
       .then(res => {
+        console.log(res.data);
         alert('訂單已成功送出');
+        renderCartList({});// clear cart list
       })
       .catch(err => {
         console.log(err.response);
