@@ -3,7 +3,7 @@ const apiUrl = 'https://livejs-api.hexschool.io';
 const apiPath = 'kn99';
 
 const productList = document.querySelector('.productWrap');
-
+const productSelect = document.querySelector('.productSelect');
 
 function init() {
     getProductList();
@@ -18,9 +18,8 @@ function getProductList() {
     })
     .then(res => {
         console.log(res.data);
-        let products = res.data.products;// 商品列表
-        renderProductList(products);
-
+        renderProductList(res.data.products);
+        createProductSelect(res.data.products);
     })
     .catch(err => {
         console.log(err.response);
@@ -47,3 +46,30 @@ function renderProductList(productData) {
 function getFormatPrice(price) {
     return `NT$${price.toLocaleString('en-US')}`;
 }
+
+function createProductSelect(productData) {
+    let productTypes = [];
+    // 歸納種類
+    productData.forEach(item => {
+        if (!productTypes.includes(item.category)) productTypes.push(item.category);
+    })
+    
+    // 建立 select options
+    let str = '<option value="全部" selected>全部</option>';
+    productTypes.forEach(item => {
+        str += `<option value="${item}">${item}</option>`;
+    })
+    productSelect.innerHTML = str;
+
+    // 綁定 select event
+    bindSelectProductEvent(productData);
+}
+
+function bindSelectProductEvent(productData) {
+    productSelect.addEventListener('change', e => {
+      let category = e.target.value;
+      let selectedProduct = productData.filter(item => category==='全部' ? true : item.category===category);
+      
+      renderProductList(selectedProduct);
+    });
+  }
