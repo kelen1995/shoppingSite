@@ -5,12 +5,15 @@ const apiPath = 'kn99';
 const productList = document.querySelector('.productWrap');
 const productSelect = document.querySelector('.productSelect');
 const cartTable = document.querySelector('.shoppingCart-table');
+const submitForm = document.querySelector('.orderInfo-form');
+const submitBtn = document.querySelector('.orderInfo-btn');
 
 function init() {
     getProductList();
     getCartList();
     bindAddCartEvent();
     bindRemoveCartEvent();
+    bindSubmitEvent();
 }
 
 init();
@@ -269,3 +272,101 @@ function bindRemoveCartEvent() {
 
 }
 
+function bindSubmitEvent() {
+    submitBtn.addEventListener('click', e => {
+        e.preventDefault();
+        // console.log(e.target);
+        
+        // 驗證訂單資訊
+        let errors = validate(submitForm, getConstrains());
+      
+        // 送出訂單
+        if(!errors) {
+          clearAlertMessage();
+          createOrders();
+        } else {
+          markInvalidInput(errors); 
+        }
+    });
+}
+
+function getConstrains() {
+  return {
+        "姓名":{
+          presence: {
+            message: '是必填欄位'
+          }
+        },
+        "電話":{
+          presence: {
+            message: '是必填欄位'
+          }
+        },
+        "Email":{
+          presence: {
+            message: '是必填欄位'
+          }
+        },
+        "寄送地址":{
+          presence: {
+            message: '是必填欄位'
+          }
+        }
+      };
+}
+
+function createOrders() {
+      // 將資料組成物件
+      let buyerData = `
+      {
+        "data": {
+          "user": {
+            "name": "${document.querySelector('#customerName').value}",
+            "tel": "${document.querySelector('#customerPhone').value}",
+            "email": "${document.querySelector('#customerEmail').value}",
+            "address": "${document.querySelector('#customerAddress').value}",
+            "payment": "${document.querySelector('#tradeWay').value}"
+          }
+        }
+      }
+      `;
+    
+      // 送出請求
+      axios({
+          method: 'post',
+          url: `${apiUrl}/api/livejs/v1/customer/${apiPath}/orders`,
+          data: JSON.parse(buyerData)
+      })
+      .then(res => {
+        alert('訂單已成功送出');
+      })
+      .catch(err => {
+        console.log(err.response);
+        if (err.response.data.message) {
+            alert(err.response.data.message);
+        } else {
+            alert('訂單送出失敗');
+        }
+      })
+  }
+
+// 標註輸入錯誤的欄位
+function markInvalidInput(errorList) {
+  clearAlertMessage();
+  // console.log(errorList);
+
+  let errors = Object.keys(errorList);
+  // console.log(errors);
+
+  errors.forEach(error => {
+    let note = document.querySelector(`[data-message=${error}]`);
+    note.textContent = errorList[error];
+  })
+}
+
+function clearAlertMessage() {
+  let messages = document.querySelectorAll('.orderInfo-message');
+  messages.forEach(msg => {
+    msg.textContent = '';
+  })
+}
